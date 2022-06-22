@@ -10,7 +10,7 @@ import mermaid from 'mermaid'
 import mermaidAPI from 'mermaid/mermaidAPI'
 
 import { Config } from './config.model'
-import { getTheme } from './theme.helper'
+import { getTheme, DARK_THEME_KEY, LIGHT_THEME_KEY } from './theme.helper'
 
 /**
  * Assign a unique ID to each mermaid svg as per requirements
@@ -31,6 +31,27 @@ export type MermaidProps = {
    * Config to initialize mermaid with.
    */
   config?: Config
+}
+
+const SvgOpenExternal = ({ theme, svg }): ReactElement => {
+  const iconSize = "16"
+  const fillColor = DARK_THEME_KEY === theme ? '#FFF' : '#000'
+
+  const openSvgInWindow = () => {
+    if (!svg) return
+
+    const svgBlob = new Blob([svg], { type: "image/svg+xml" })
+    const url = URL.createObjectURL(svgBlob);
+    return window.open(url)
+  }
+
+  return (
+    <div className='mermaid-svg-opener' onClick={openSvgInWindow} style={{ position: 'relative', height: `${iconSize}px`, cursor: 'pointer' }}>
+      <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width={iconSize} height={iconSize} preserveAspectRatio="xMidYMid meet" viewBox="0 0 1792 1536" style={{ position: 'absolute', right: 0 }}>
+        <path fill={fillColor} d="M1408 928v320q0 119-84.5 203.5T1120 1536H288q-119 0-203.5-84.5T0 1248V416q0-119 84.5-203.5T288 128h704q14 0 23 9t9 23v64q0 14-9 23t-23 9H288q-66 0-113 47t-47 113v832q0 66 47 113t113 47h832q66 0 113-47t47-113V928q0-14 9-23t23-9h64q14 0 23 9t9 23zm384-864v512q0 26-19 45t-45 19t-45-19l-176-176l-652 652q-10 10-23 10t-23-10L695 983q-10-10-10-23t10-23l652-652l-176-176q-19-19-19-45t19-45t45-19h512q26 0 45 19t19 45z"/>
+      </svg>
+    </div>
+  )
 }
 
 /**
@@ -76,6 +97,7 @@ export const Mermaid = ({ chart, config }: MermaidProps): ReactElement<MermaidPr
 
   // When theme updates, rerender the SVG.
   const [svg, setSvg] = useState<string>('')
+
   useEffect(() => {
     const render = () => {
       mermaid.render(`mermaid-svg-${id.toString()}`, chart, (renderedSvg) => setSvg(renderedSvg))
@@ -95,5 +117,10 @@ export const Mermaid = ({ chart, config }: MermaidProps): ReactElement<MermaidPr
     }
   }, [theme, chart])
 
-  return <div dangerouslySetInnerHTML={{ __html: svg }}></div>
+  return (
+    <div className='mermaid-svg-wrapper'>
+      {config?.showOpenLink && <SvgOpenExternal svg={svg} theme={theme} />}
+      <div className='mermaid-svg-container' dangerouslySetInnerHTML={{ __html: svg }} />
+    </div>
+  )
 }

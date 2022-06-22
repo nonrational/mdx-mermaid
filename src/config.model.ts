@@ -38,4 +38,9 @@ export type Config = {
    * Mermaid configuration.
    */
   mermaid?: mermaidAPI.Config
+
+  /**
+   * Show open SVG in new window button.
+   */
+  showOpenLink?: Boolean
 };
